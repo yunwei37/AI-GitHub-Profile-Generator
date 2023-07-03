@@ -61,11 +61,6 @@ const Home: NextPage = () => {
   }
 
   async function getUserPage(username: string): Promise<string> {
-    // Post to https://plugin.wegpt.ai/scrape_url with url
-    // {
-    //   "url": "https://github.com/yunwei37"
-    // }
-    // return the html page
     const url = "https://plugin.wegpt.ai/scrape_url";
     const data = {
       url: `https://github.com/${username}`
@@ -158,9 +153,9 @@ const Home: NextPage = () => {
           <p>Star on GitHub</p>
         </a>
         <h1 className="sm:text-6xl text-4xl max-w-[708px] font-bold text-slate-900">
-          Generate your beautiful GitHub Profile README with GPT
+          Generate GitHub Profile README with GPT
         </h1>
-        <p className="text-slate-500 mt-5">47,118 Profile generated so far.</p>
+        <p className="text-slate-500 mt-5">14,456 Profile generated so far.</p>
         <div className="max-w-xl w-full">
           <div className="flex mb-5 items-center space-x-3">
             <Image src="/1-black.png" width={30} height={30} alt="1 icon" />
