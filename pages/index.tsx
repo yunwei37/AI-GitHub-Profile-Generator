@@ -30,14 +30,13 @@ The user's github profile is:
 Analyzing the user's github profile, and generating a beautiful README for the user.
 Craft a captivating GitHub profile README that effectively showcases user skills, 
 highlights user best projects, and provides clear contact information. 
-Summary the projects and give user analysis of the projects and user.
+Give a summary for all the projects and give more analysis of the user.
 Maybe you can use badges to showcase the skills or the languages user use, and any other information.
 Don't forget to incorporate visually appealing elements such as images, GIFs, badges, 
 and a well-structured layout using Markdown.
 
-Avoid to give any numbers directly or list all the projects, give more analysis and summary.
-Avoid generate more than 2000 words,
-Avoid using html tags directly.
+Avoid to give any numbers directly or list the project details, give more analysis and summary.
+Avoid generate more than 2000 words, and the generated README should be more than 500 words.
 You can choose to use some of the the following stats, replace it with the real github username:
 """
 ![Github Stats](https://github-readme-stats.vercel.app/api?username=username
