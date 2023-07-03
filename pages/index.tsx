@@ -27,6 +27,10 @@ The user's github profile is:
 {{userProfile}}
 """
 Analyzing the user's github profile, and generating a beautiful README for the user.
+Craft a captivating GitHub profile README that effectively showcases your skills, 
+highlights your best projects, and provides clear contact information. 
+Don't forget to incorporate visually appealing elements such as images, GIFs, badges, 
+and a well-structured layout using Markdown. Avoid using html tags.
 You can use the following stats, replace xxxxx with github username:
 """
 ![Github Stats](https://github-readme-stats.vercel.app/api?username=xxxxx
