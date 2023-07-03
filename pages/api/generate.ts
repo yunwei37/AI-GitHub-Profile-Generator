@@ -1,3 +1,4 @@
+// MIT License Copyright (c) 2023 Hassan El Mghari
 import { OpenAIStream, OpenAIStreamPayload } from "../../utils/OpenAIStream";
 
 if (!process.env.OPENAI_API_KEY) {
