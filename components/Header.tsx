@@ -14,11 +14,11 @@ export default function Header() {
           height={32}
         />
         <h1 className="sm:text-4xl text-2xl font-bold ml-2 tracking-tight">
-          twitterbio.io
+          Github Profile Generator
         </h1>
       </Link>
       <a
-        href="https://vercel.com/templates/next.js/twitter-bio"
+        href="https://github.com/yunwei37/AI-GitHub-Profile-Generator"
         target="_blank"
         rel="noreferrer"
       >
