@@ -27,14 +27,14 @@ The user's github profile is:
 """
 {{userProfile}}
 """
-Analyzing the user's github profile, and generating a beautiful README for the user.
 Craft a captivating GitHub profile README that effectively showcases user skills, 
 highlights user best projects, and provides clear contact information. 
-Give a summary for all the projects and give more analysis of the user.
-Maybe you can use badges to showcase the skills or the languages user use, and any other information.
+Give more analysis and deep insight about the user, 
+and generate more self-introduction base on the user's github profile.
 Don't forget to incorporate visually appealing elements such as images, GIFs, badges, 
 and a well-structured layout using Markdown.
 
+Avoid use html tags, use markdown format.
 Avoid to give any numbers directly or list the project details, give more analysis and summary.
 Avoid generate more than 2000 words, and the generated README should be more than 500 words.
 You can choose to use some of the the following stats, replace it with the real github username:
@@ -46,32 +46,76 @@ You can choose to use some of the the following stats, replace it with the real 
 Output the generated README in markdown format.
 `;
 
-const instructions = `
-# head
+const exampleBios = [`
+# About Me
 
-## subhead
-Sure, here is a step-by-step guide on how to create a visually appealing and impressive GitHub profile README:
+Hi, I'm Yunwei, a passionate learner and software developer from Hangzhou, China. Welcome to my GitHub profile!
 
-1. **Create a New Repository**: The first step is to create a new repository that is the same name as your GitHub username. For example, if your GitHub username is "johndoe", you should create a new repository named "johndoe". This repository will house the README file that will be displayed on your GitHub profile.
-2. **Create a README file**: In your new repository, create a new file and name it "README.md". The ".md" extension stands for Markdown, which is the language you'll use to format your README file.
-3. **Write Your README**: Now, you can start writing your README. Here are some elements you might want to include:
-   - **Introduction**: Briefly introduce yourself and explain what you do.
-   - **Skills**: List your skills and areas of expertise.
-   - **Projects**: Highlight some of your best projects. You can include links to the project repositories and any live demos if available.
-   - **Contact Information**: Provide ways for people to contact you. This could be your email, LinkedIn profile, or other social media links.
-4. **Add Visuals**: To make your README more visually appealing, consider adding some visuals. This could be in the form of images, GIFs, or even emojis. You can also use badges to showcase your skills or the languages you use.
-5. **Use Markdown**: Markdown is a lightweight markup language that you can use to format your README. You can use it to create headers, lists, links, and more. If you're not familiar with Markdown, there are many guides available online.
-6. **Commit and Push**: Once you're happy with your README, commit and push it to your repository. Your new, beautiful GitHub profile README should now be visible on your GitHub profile.
-As for an improved prompt to help you generate an outstanding GitHub profile README, consider this:
+- 🏢 I currently work at eunomia-bpf
+- 🌍 Find me on the web: [yunwei123.tech](https://www.yunwei123.tech/)
+- ✉️ Contact me: To be announced
+- 📖 I love exploring new technologies and applying them to solve real-world problems
 
-"Craft a captivating GitHub profile README that effectively showcases your skills, highlights your best projects, and provides clear contact information. Don't forget to incorporate visually appealing elements such as images, GIFs, badges, and a well-structured layout using Markdown."
-`;
+## 🙋‍♂️ A bit more about me
+
+I started my coding journey in 2017, and since then, I have been dedicated to expanding my knowledge and skills. I believe that having a curious and open mind allows me to continue learning and improving.
+
+## 👨‍💻 Stats
+
+![Github Stats](https://github-readme-stats.vercel.app/api?username=yunwei37)
+![Top Langs](https://github-readme-stats.vercel.app/api/top-langs/?username=yunwei37)
+
+Feel free to explore my repositories to get a better sense of my work and interests.
+
+## 🏆 Achievements
+
+Here are some notable achievements and contributions:
+
+[![trophy](https://github-profile-trophy.vercel.app/?username=yunwei37)](https://github.com/yunwei37)
+
+These achievements are a testament to my dedication and passion for coding.
+
+## 🚀 My Skills:
+
+| Category        | Technology                 | 
+|-----------------|----------------------------| 
+| Programming     | Python                     | 
+| Programming     | JavaScript                 | 
+| Markup Language | HTML                       | 
+| Stylesheet      | CSS                        | 
+| Web Framework   | Django                     | 
+| Web Framework   | Flask                      | 
+| Backend         | Node.js                    | 
+| Frontend        | React                      | 
+| Data Science    | Data Analysis              | 
+| Data Science    | Machine Learning           | 
+| Database        | SQL                        | 
+| Version Control | Git                        | 
+| Containerization| Docker                     | 
+| Cloud Computing | AWS                        |
+
+## ✨ Let's Connect
+
+I would love to connect with fellow developers, entrepreneurs, and technology enthusiasts. Here are a few ways to get in touch with me:
+
+- Website: [yunwei123.tech](https://www.yunwei123.tech/)
+- Twitter: [@yunwei37](https://twitter.com/yunwei37)
+- GitHub: [yunwei37](https://github.com/yunwei37)
+
+Let's collaborate, share ideas, and make meaningful contributions to the world of technology!
+
+---
+
+Thank you for taking the time to visit my GitHub profile and read this README. Feel free to explore my projects, and don't hesitate to reach out if you have any questions or opportunities for collaboration. Together, we can make a positive impact in the world of software development!
+`];
 
 const Home: NextPage = () => {
   const [loading, setLoading] = useState(false);
   const [bio, setBio] = useState("");
   const [generatedBios, setGeneratedBios] = useState<string>("");
   const [userName, setUserName] = useState<string>("");
+
+  const [exampleBio, setExampleBio] = useState<string>("");
 
   const bioRef = useRef<null | HTMLDivElement>(null);
 
@@ -96,10 +140,11 @@ const Home: NextPage = () => {
 
   const generateBio = async (e: any) => {
     e.preventDefault();
-    setGeneratedBios("Getting user stats...");
+    setGeneratedBios(`Getting user stats for ${userName}...`);
     setLoading(true);
     const userStats = await getUserStats(userName);
     console.log(userStats);
+    setGeneratedBios(`Getting user profile for ${userName}...`);
     const userPage: string = await getUserPage(userName);
     setGeneratedBios("");
 
@@ -254,7 +299,7 @@ const Home: NextPage = () => {
         </div>
       </main>
       <div className="space-y-8 flex flex-col items-center max-w-xl mx-auto">
-        <div
+        {generatedBios && <div
           className="bg-white rounded-xl shadow-mdhover:bg-gray-100 transition cursor-copy border"
           onClick={() => {
             navigator.clipboard.writeText(generatedBios);
@@ -267,7 +312,18 @@ const Home: NextPage = () => {
           <div className="markdown-body p-4">
             <ReactMarkdown children={generatedBios} />
           </div>
+        </div>}
+        <div className="flex flex-row">
+          <p
+            onClick={() => setExampleBio(exampleBios[0])}
+          >Click to show generated example</p>
         </div>
+        {exampleBio && <div className="bg-white rounded-xl shadow-mdhover:bg-gray-100 transition cursor-copy border">
+          {/* use a list of buttons to show the examples */}
+          <div className="markdown-body p-4">
+            <ReactMarkdown children={exampleBio} />
+          </div>
+        </div>}
       </div>
       <Footer />
     </div>
