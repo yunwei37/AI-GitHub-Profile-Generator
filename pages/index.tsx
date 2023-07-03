@@ -61,20 +61,9 @@ const Home: NextPage = () => {
   }
 
   async function getUserPage(username: string): Promise<string> {
-    const url = "https://plugin.wegpt.ai/scrape_url";
-    const data = {
-      url: `https://github.com/${username}`
-    };
-
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data)
-    }).then((response) => response.json());
-    const r = await response.json();
-    return r;
+    const url = `/api/scrape_url?username=${username}`;
+    const response = await fetch(url);
+    return await response.json();
   }
 
   const generateBio = async (e: any) => {
@@ -137,7 +126,7 @@ const Home: NextPage = () => {
   return (
     <div className="flex max-w-5xl mx-auto flex-col items-center justify-center py-2 min-h-screen">
       <Head>
-        <title>Twitter Bio Generator</title>
+        <title>GitHub Profile AI Generator</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
@@ -145,7 +134,7 @@ const Home: NextPage = () => {
       <main className="flex flex-1 w-full flex-col items-center justify-center text-center px-4 mt-12 sm:mt-20">
         <a
           className="flex max-w-fit items-center justify-center space-x-2 rounded-full border border-gray-300 bg-white px-4 py-2 text-sm text-gray-600 shadow-md transition-colors hover:bg-gray-100 mb-5"
-          href="https://github.com/Nutlope/twitterbio"
+          href="https://github.com/yunwei37/AI-GitHub-Profile-Generator"
           target="_blank"
           rel="noopener noreferrer"
         >
@@ -231,9 +220,9 @@ const Home: NextPage = () => {
                   Your generated Github Profile
                 </h2>
               </div>
-              <div className="space-y-8 flex flex-col items-center justify-center max-w-xl mx-auto">
+              <div className="space-y-8 flex flex-col max-w-xl mx-auto">
                 <div
-                  className="bg-white rounded-xl shadow-md p-4 hover:bg-gray-100 transition cursor-copy border"
+                  className="bg-white rounded-xl p-4 hover:bg-gray-100 transition cursor-copy border"
                   onClick={() => {
                     navigator.clipboard.writeText(generatedBios);
                     toast("Bio copied to clipboard", {
@@ -242,8 +231,7 @@ const Home: NextPage = () => {
                   }}
                   key={generatedBios}
                 >
-                  <ReactMarkdown unwrapDisallowed={true}
-                  >{generatedBios}</ReactMarkdown>
+                  <ReactMarkdown  children={generatedBios} />
                 </div>
               </div>
             </>

@@ -1,14 +1,12 @@
-# [ReadmeGenerator.io](https://www.readmegenerator.io/)
+# Github Profile README Generator
 
-This project generates beautiful GitHub profile readme files for you with just one click.
+Let AI analyze your GitHub and generates beautiful GitHub profile readme files for you with just one click.
 
 [![GitHub Profile Readme Generator](./public/screenshot.png)](https://www.readmegenerator.io)
 
 ## How it works
 
-This project utilizes AI-powered technology and streamlined processes to generate personalized and attractive GitHub profile readme files. By providing your username and clicking a button, the project generates a readme file that showcases your information and projects in an appealing format.
-
-If you're curious about the development process, you can watch the [video](https://youtu.be/JcE-1xzQTE0) or read the [blog post](https://vercel.com/blog/gpt-3-app-next-js-vercel-edge-functions) where I explain how this project was built using the ChatGPT API and Vercel Edge functions.
+This project utilizes AI-powered technology and streamlined processes to generate personalized and attractive GitHub profile readme files. By providing your username and clicking a button, the project will get your repo info and profile info, generates a readme file that showcases your information and projects in an appealing format.
 
 ## Running Locally
 

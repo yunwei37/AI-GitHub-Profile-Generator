@@ -25,10 +25,6 @@ interface UserStatsFull {
     totalStars: number;
     contributedTo: number;
     mostStarredRepos: any;
-    rank: {
-        level: string;
-        percentile: number;
-    };
     error: string;
 }
 
@@ -75,7 +71,7 @@ export default async function generateUserStats(owner: string): Promise<UserStat
     // Keys to be kept
     const keysToKeep: (keyof UserStatsFull)[] = ["html_url", "type", "name", "company", "blog", "location", "email", "hireable", "bio",
         "twitter_username", "public_repos", "public_gists", "followers", "following", "created_at",
-        "updated_at", "totalPRs", "totalCommits", "totalIssues", "totalStars", "contributedTo", "rank", "mostStarredRepos", "error"];
+        "updated_at", "totalPRs", "totalCommits", "totalIssues", "totalStars", "contributedTo",  "mostStarredRepos", "error"];
 
     // Filter the full data to only include keys from the whitelist
     const filteredData: UserStatsFull = Object.keys(fullData)
