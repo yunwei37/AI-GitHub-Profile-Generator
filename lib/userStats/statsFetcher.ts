@@ -3,12 +3,32 @@ import { userStats } from "../../interfaces/userStats";
 import {calculateRank} from './calculateRank';
 
 const GRAPHQL_REPOS_FIELD = `
-  repositories(first: 100, ownerAffiliations: OWNER, orderBy: {direction: DESC, field: STARGAZERS}, after: $after) {
+  repositories(first: 100, orderBy: {direction: DESC, field: STARGAZERS}, after: $after) {
     totalCount
     nodes {
       name
       stargazers {
         totalCount
+      }
+      description
+      createdAt
+      url
+      updatedAt
+      languages(first: 10, orderBy: {field: SIZE, direction: DESC}) {
+        edges {
+          node {
+            name
+          }
+        }
+      }
+      repositoryTopics(first: 10) {
+        edges {
+          node {
+            topic {
+              name
+            }
+          }
+        }
       }
     }
     pageInfo {
@@ -148,8 +168,15 @@ const fetchStats = async (username: string): Promise<userStats> => {
 
   const mostStarredRepos = user.repositories.nodes
   .sort((a: { stargazers: { totalCount: number; }; }, b: { stargazers: { totalCount: number; }; }) => b.stargazers.totalCount - a.stargazers.totalCount)
-  .slice(0, 8)
-  .map((repo: { name: any; }) => repo.name);
+  .map((repo: { languages: { edges: any[]; }; repositoryTopics: { edges: any[]; }; }) => {
+    return {
+      ...repo,
+      languages: repo.languages.edges.map((edge) => edge.node.name),
+      repositoryTopics: repo.repositoryTopics.edges.map((edge) => edge.node.topic.name),
+    };
+  })
+  .slice(0, 20);
+
 
   stats.mostStarredRepos = mostStarredRepos;
 
