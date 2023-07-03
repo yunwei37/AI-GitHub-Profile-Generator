@@ -3,29 +3,39 @@ import type { NextPage } from "next";
 import Head from "next/head";
 import Image from "next/image";
 import { useRef, useState } from "react";
-import { Toaster, toast } from "react-hot-toast";
-import DropDown, { VibeType } from "../components/DropDown";
 import Footer from "../components/Footer";
 import Github from "../components/GitHub";
 import Header from "../components/Header";
-import LoadingDots from "../components/LoadingDots";
 import {
   createParser,
   ParsedEvent,
   ReconnectInterval,
 } from "eventsource-parser";
-import ReactMarkdown from 'react-markdown';
-import 'github-markdown-css';
+import MDview from '@/components/mdView';
+import ExampleBioComponent from '@/components/example';
 
-const promptTemplate = `
+const promptTemplateAnalyzeUser = `
+Given the information about a GitHub user represented by the variables:
+
+- User statistics: {{userStats}}
+- User profile: {{userProfile}}
+
+Your task is to provide a detailed analysis of the user's activity and performance on GitHub. Your evaluation should include, but not be limited to, the following:
+
+1. Insight into the user's coding habits, including their most frequently used languages and the frequency of their commits.
+2. An overview of their project contributions, both in terms of repositories they've created and those they've contributed to.
+3. A snapshot of their overall GitHub presence, encapsulating factors like the number of followers they have and any other significant details available from their profile and stats.
+
+For example, your analysis could highlight a user's strong focus on Python development, their consistent daily commits demonstrating high engagement, or their significant contributions to a high-profile open-source project.
+
+Please structure your analysis in a clear, comprehensible manner, highlighting key insights and patterns in the user's GitHub behavior.
+`;
+
+const promptTemplateGenerate = `
 Generate a beatuiful github profile README with GPT and AI, base on the input prompt. 
-the user stats are: 
+the user insights and analysis are:
 """
-{{userStats}}}
-"""
-The user's github profile is:
-"""
-{{userProfile}}
+{{user insights}}
 """
 Craft a captivating GitHub profile README that effectively showcases user skills, 
 highlights user best projects, and provides clear contact information. 
@@ -43,79 +53,19 @@ You can choose to use some of the the following stats, replace it with the real 
 ![Top Langs](https://github-readme-stats.vercel.app/api/top-langs/?username=username
 [![trophy](https://github-profile-trophy.vercel.app/?username=username)](https://github.com/username)
 """
+Here is some additional requirements:
+"""
+{{requirements}}
+"""
 Output the generated README in markdown format.
 `;
-
-const exampleBios = [`
-# About Me
-
-Hi, I'm Yunwei, a passionate learner and software developer from Hangzhou, China. Welcome to my GitHub profile!
-
-- 🏢 I currently work at eunomia-bpf
-- 🌍 Find me on the web: [yunwei123.tech](https://www.yunwei123.tech/)
-- ✉️ Contact me: To be announced
-- 📖 I love exploring new technologies and applying them to solve real-world problems
-
-## 🙋‍♂️ A bit more about me
-
-I started my coding journey in 2017, and since then, I have been dedicated to expanding my knowledge and skills. I believe that having a curious and open mind allows me to continue learning and improving.
-
-## 👨‍💻 Stats
-
-![Github Stats](https://github-readme-stats.vercel.app/api?username=yunwei37)
-![Top Langs](https://github-readme-stats.vercel.app/api/top-langs/?username=yunwei37)
-
-Feel free to explore my repositories to get a better sense of my work and interests.
-
-## 🏆 Achievements
-
-Here are some notable achievements and contributions:
-
-[![trophy](https://github-profile-trophy.vercel.app/?username=yunwei37)](https://github.com/yunwei37)
-
-These achievements are a testament to my dedication and passion for coding.
-
-## 🚀 My Skills:
-
-| Category        | Technology                 | 
-|-----------------|----------------------------| 
-| Programming     | Python                     | 
-| Programming     | JavaScript                 | 
-| Markup Language | HTML                       | 
-| Stylesheet      | CSS                        | 
-| Web Framework   | Django                     | 
-| Web Framework   | Flask                      | 
-| Backend         | Node.js                    | 
-| Frontend        | React                      | 
-| Data Science    | Data Analysis              | 
-| Data Science    | Machine Learning           | 
-| Database        | SQL                        | 
-| Version Control | Git                        | 
-| Containerization| Docker                     | 
-| Cloud Computing | AWS                        |
-
-## ✨ Let's Connect
-
-I would love to connect with fellow developers, entrepreneurs, and technology enthusiasts. Here are a few ways to get in touch with me:
-
-- Website: [yunwei123.tech](https://www.yunwei123.tech/)
-- Twitter: [@yunwei37](https://twitter.com/yunwei37)
-- GitHub: [yunwei37](https://github.com/yunwei37)
-
-Let's collaborate, share ideas, and make meaningful contributions to the world of technology!
-
----
-
-Thank you for taking the time to visit my GitHub profile and read this README. Feel free to explore my projects, and don't hesitate to reach out if you have any questions or opportunities for collaboration. Together, we can make a positive impact in the world of software development!
-`];
 
 const Home: NextPage = () => {
   const [loading, setLoading] = useState(false);
   const [bio, setBio] = useState("");
+  const [generatedUserAnalysis, setGeneratedUserAnalysis] = useState<string>("");
   const [generatedBios, setGeneratedBios] = useState<string>("");
   const [userName, setUserName] = useState<string>("");
-
-  const [exampleBio, setExampleBio] = useState<string>("");
 
   const bioRef = useRef<null | HTMLDivElement>(null);
 
@@ -129,26 +79,18 @@ const Home: NextPage = () => {
   async function getUserStats(username: string): Promise<string> {
     const response = await fetch(`/api/github/${username}`);
     const data = await response.json();
-    return data;
+    return JSON.stringify(data);
   }
 
   async function getUserPage(username: string): Promise<string> {
     const url = `/api/scrape_url?username=${username}`;
     const response = await fetch(url);
-    return await response.json();
+    const data = await response.json();
+    return JSON.stringify(data);
   }
 
-  const generateBio = async (e: any) => {
+  const generateAIresponse = async (e: any, prompt: string, setGenerated: (value: React.SetStateAction<string>) => void) => {
     e.preventDefault();
-    setGeneratedBios(`Getting user stats for ${userName}...`);
-    setLoading(true);
-    const userStats = await getUserStats(userName);
-    console.log(userStats);
-    setGeneratedBios(`Getting user profile for ${userName}...`);
-    const userPage: string = await getUserPage(userName);
-    setGeneratedBios("");
-
-    const prompt = promptTemplate.replace("{{userStats}}", JSON.stringify(userStats)).replace("{{userProfile}}", userPage);
     const response = await fetch("/api/generate", {
       method: "POST",
       headers: {
@@ -174,7 +116,7 @@ const Home: NextPage = () => {
         const data = event.data;
         try {
           const text = JSON.parse(data).text ?? ""
-          setGeneratedBios((prev) => prev + text);
+          setGenerated((prev) => prev + text);
         } catch (e) {
           console.error(e);
         }
@@ -193,6 +135,45 @@ const Home: NextPage = () => {
       parser.feed(chunkValue);
     }
     scrollToBios();
+  }
+  const handleGenerateUserAnalysis = async (e: any) => {
+    if (!userName) {
+      window.alert("Please enter a valid GitHub username");
+      return;
+    }
+    setLoading(true);
+    e.preventDefault();
+    // get user state and analysis user first
+    setGeneratedBios(`Getting user stats for ${userName}...`);
+    const userStats: string = await getUserStats(userName);
+    console.log(userStats);
+
+    setGeneratedBios(`Getting user profile for ${userName}...`);
+    const userPage: string = await getUserPage(userName);
+    console.log(userPage);
+    setGeneratedBios("");
+
+    const promptUserAnalysis = promptTemplateAnalyzeUser.
+      replace("{{userStats}}", userStats).
+      replace("{{userProfile}}", userPage);
+    console.log(promptUserAnalysis);
+    generateAIresponse(e, promptUserAnalysis, setGeneratedUserAnalysis);
+
+    setLoading(false);
+  };
+
+  const handleGenerateBio = async (e: any) => {
+    if (!generatedUserAnalysis) {
+      window.alert("Please do step 1 first");
+      return;
+    }
+    setLoading(true);
+    e.preventDefault();
+  
+    const promptProfile = promptTemplateGenerate.
+      replace("{{user insights}}", generatedUserAnalysis).
+      replace("{{requirements}}", bio);
+    generateAIresponse(e, promptProfile, setGeneratedBios);
     setLoading(false);
   };
 
@@ -204,9 +185,9 @@ const Home: NextPage = () => {
       </Head>
 
       <Header />
-      <main className="flex flex-1 w-full flex-col items-center justify-center text-center px-4 mt-12 sm:mt-20">
+      <div className="flex flex-1 w-full flex-col items-center justify-center px-4 mt-12 sm:mt-20">
         <a
-          className="flex max-w-fit items-center justify-center space-x-2 rounded-full border border-gray-300 bg-white px-4 py-2 text-sm text-gray-600 shadow-md transition-colors hover:bg-gray-100 mb-5"
+          className="flex max-w-fit items-center justify-center space-x-2 rounded-full border border-gray-300 bg-white px-4 py-2 text-sm shadow-md transition-colors hover:bg-gray-100 mb-5"
           href="https://github.com/yunwei37/AI-GitHub-Profile-Generator"
           target="_blank"
           rel="noopener noreferrer"
@@ -232,6 +213,14 @@ const Home: NextPage = () => {
               placeholder="Enter your github username"
             />
           </div>
+          <MDview 
+          loading={loading} 
+          handleGenerateBio={handleGenerateUserAnalysis} 
+          generatedBios={generatedUserAnalysis}
+          buttonText='Let AI analysis Your Github Profile'
+          title='Analyze User Profile'
+           />
+
           <div className="flex mt-10 items-center space-x-3">
             <Image
               src="/2-black.png"
@@ -257,74 +246,16 @@ const Home: NextPage = () => {
               "e.g. I am a Full Stack Developer with 9+ years of experience in developing enterprise applications and open-source software."
             }
           />
-
-          {!loading && (
-            <button
-              className="bg-black rounded-xl text-white font-medium px-4 py-2 sm:mt-10 mt-8 hover:bg-black/80 w-full"
-              onClick={(e) => generateBio(e)}
-            >
-              Generate your GitHub profile README
-              &rarr;
-            </button>
-          )}
-          {loading && (
-            <button
-              className="bg-black rounded-xl text-white font-medium px-4 py-2 sm:mt-10 mt-8 hover:bg-black/80 w-full"
-              disabled
-            >
-              <LoadingDots color="white" style="large" />
-            </button>
-          )}
+          <MDview loading={loading} handleGenerateBio={handleGenerateBio} generatedBios={generatedBios} 
+          buttonText='Generate GitHub Profile README'
+          title='Your GitHub Profile README'
+          />
         </div>
-        <Toaster
-          position="top-center"
-          reverseOrder={false}
-          toastOptions={{ duration: 2000 }}
-        />
         <hr className="h-px bg-gray-700 border-1 dark:bg-gray-700" />
-        <div className="space-y-10 my-10">
-          {generatedBios && (
-            <>
-              <div>
-                <h2
-                  className="sm:text-4xl text-3xl font-bold text-slate-900 mx-auto"
-                  ref={bioRef}
-                >
-                  Your generated Github Profile
-                </h2>
-              </div>
-
-            </>
-          )}
-        </div>
-      </main>
-      <div className="space-y-8 flex flex-col items-center max-w-xl mx-auto">
-        {generatedBios && <div
-          className="bg-white rounded-xl shadow-mdhover:bg-gray-100 transition cursor-copy border"
-          onClick={() => {
-            navigator.clipboard.writeText(generatedBios);
-            toast("Bio copied to clipboard", {
-              icon: "✂️",
-            });
-          }}
-          key={generatedBios}
-        >
-          <div className="markdown-body p-4">
-            <ReactMarkdown children={generatedBios} />
-          </div>
-        </div>}
-        <div className="flex flex-row">
-          <p
-            onClick={() => setExampleBio(exampleBios[0])}
-          >Click to show generated example</p>
-        </div>
-        {exampleBio && <div className="bg-white rounded-xl shadow-mdhover:bg-gray-100 transition cursor-copy border">
-          {/* use a list of buttons to show the examples */}
-          <div className="markdown-body p-4">
-            <ReactMarkdown children={exampleBio} />
-          </div>
-        </div>}
       </div>
+
+      <ExampleBioComponent />
+
       <Footer />
     </div>
   );
