@@ -1,7 +1,8 @@
 import { userCache } from '../cache';
 import { fetchStats } from './statsFetcher';
+import { userStats } from "../../interfaces/userStats";
 
-interface UserStats {
+interface UserStatsFull {
     html_url: string;
     type: string;
     name: string;
@@ -31,7 +32,7 @@ interface UserStats {
     error: string;
 }
 
-export default async function generateUserStats(owner: string): Promise<UserStats> {
+export default async function generateUserStats(owner: string): Promise<UserStatsFull> {
     // get the owner's GitHub stats
     const response = await fetch(`https://api.github.com/users/${owner}`);
     if (!response.ok) {
@@ -72,17 +73,17 @@ export default async function generateUserStats(owner: string): Promise<UserStat
         };
     }
     // Keys to be kept
-    const keysToKeep: (keyof UserStats)[] = ["html_url", "type", "name", "company", "blog", "location", "email", "hireable", "bio",
+    const keysToKeep: (keyof UserStatsFull)[] = ["html_url", "type", "name", "company", "blog", "location", "email", "hireable", "bio",
         "twitter_username", "public_repos", "public_gists", "followers", "following", "created_at",
         "updated_at", "totalPRs", "totalCommits", "totalIssues", "totalStars", "contributedTo", "rank", "mostStarredRepos", "error"];
 
     // Filter the full data to only include keys from the whitelist
-    const filteredData: UserStats = Object.keys(fullData)
-        .filter((key): key is keyof UserStats => keysToKeep.includes(key as keyof UserStats))
+    const filteredData: UserStatsFull = Object.keys(fullData)
+        .filter((key): key is keyof UserStatsFull => keysToKeep.includes(key as keyof UserStatsFull))
         .reduce((obj, key) => {
             obj[key] = fullData[key];
             return obj;
-        }, {} as Partial<UserStats>) as UserStats;
+        }, {} as Partial<UserStatsFull>) as UserStatsFull;
 
     return filteredData;
 }
