@@ -16,10 +16,15 @@ import {
 } from "eventsource-parser";
 import ReactMarkdown from 'react-markdown';
 
-const promptTemplate = `Generate a beatuiful github profile README with GPT and AI, base on the input prompt. 
+const promptTemplate = `
+Generate a beatuiful github profile README with GPT and AI, base on the input prompt. 
 the user stats are: 
 """
 {{userStats}}}
+"""
+The user's github profile is:
+"""
+{{userProfile}}
 """
 Analyzing the user's github profile, and generating a beautiful README for the user.
 You can use the following stats, replace xxxxx with github username:
@@ -46,9 +51,31 @@ const Home: NextPage = () => {
 
   // get github user info from api/github/[username]
   async function getUserStats(username: string): Promise<string> {
-      const response = await fetch(`/api/github/${username}`);
-      const data = await response.json();
-      return data;
+    const response = await fetch(`/api/github/${username}`);
+    const data = await response.json();
+    return data;
+  }
+
+  async function getUserPage(username: string): Promise<string> {
+    // Post to https://plugin.wegpt.ai/scrape_url with url
+    // {
+    //   "url": "https://github.com/yunwei37"
+    // }
+    // return the html page
+    const url = "https://plugin.wegpt.ai/scrape_url";
+    const data = {
+      url: `https://github.com/${username}`
+    };
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data)
+    }).then((response) => response.json());
+    const r = await response.json();
+    return r;
   }
 
   const generateBio = async (e: any) => {
@@ -56,7 +83,11 @@ const Home: NextPage = () => {
     setGeneratedBios("Getting user stats...");
     setLoading(true);
     const userStats = await getUserStats(userName);
-    const prompt = promptTemplate.replace("{{userStats}}", JSON.stringify(userStats)).replace("{{example}}", example);
+    console.log(userStats);
+    const userPage: string = await getUserPage(userName);
+    setGeneratedBios("");
+
+    const prompt = promptTemplate.replace("{{userStats}}", JSON.stringify(userStats)).replace("{{userProfile}}", userPage);
     const response = await fetch("/api/generate", {
       method: "POST",
       headers: {
@@ -136,7 +167,7 @@ const Home: NextPage = () => {
             <input
               type="text"
               onChange={(e) => setUserName(e.target.value)}
-              className="w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black my-5"  
+              className="w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black my-5"
               placeholder="Enter your github username"
             />
           </div>
@@ -171,7 +202,7 @@ const Home: NextPage = () => {
               className="bg-black rounded-xl text-white font-medium px-4 py-2 sm:mt-10 mt-8 hover:bg-black/80 w-full"
               onClick={(e) => generateBio(e)}
             >
-              Generate your GitHub profile README 
+              Generate your GitHub profile README
               &rarr;
             </button>
           )}
