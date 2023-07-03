@@ -15,6 +15,7 @@ import {
   ReconnectInterval,
 } from "eventsource-parser";
 import ReactMarkdown from 'react-markdown';
+import 'github-markdown-css';
 
 const promptTemplate = `
 Generate a beatuiful github profile README with GPT and AI, base on the input prompt. 
@@ -27,16 +28,44 @@ The user's github profile is:
 {{userProfile}}
 """
 Analyzing the user's github profile, and generating a beautiful README for the user.
-Craft a captivating GitHub profile README that effectively showcases your skills, 
-highlights your best projects, and provides clear contact information. 
+Craft a captivating GitHub profile README that effectively showcases user skills, 
+highlights user best projects, and provides clear contact information. 
+Summary the projects and give user analysis of the projects and user.
+Maybe you can use badges to showcase the skills or the languages user use, and any other information.
 Don't forget to incorporate visually appealing elements such as images, GIFs, badges, 
-and a well-structured layout using Markdown. Avoid using html tags.
-You can use the following stats, replace xxxxx with github username:
+and a well-structured layout using Markdown.
+
+Avoid to give any numbers directly or list all the projects, give more analysis and summary.
+Avoid generate more than 2000 words,
+Avoid using html tags directly.
+You can choose to use some of the the following stats, replace it with the real github username:
 """
-![Github Stats](https://github-readme-stats.vercel.app/api?username=xxxxx
-![Top Langs](https://github-readme-stats.vercel.app/api/top-langs/?username=xxxxx
+![Github Stats](https://github-readme-stats.vercel.app/api?username=username
+![Top Langs](https://github-readme-stats.vercel.app/api/top-langs/?username=username
+[![trophy](https://github-profile-trophy.vercel.app/?username=username)](https://github.com/username)
 """
 Output the generated README in markdown format.
+`;
+
+const instructions = `
+# head
+
+## subhead
+Sure, here is a step-by-step guide on how to create a visually appealing and impressive GitHub profile README:
+
+1. **Create a New Repository**: The first step is to create a new repository that is the same name as your GitHub username. For example, if your GitHub username is "johndoe", you should create a new repository named "johndoe". This repository will house the README file that will be displayed on your GitHub profile.
+2. **Create a README file**: In your new repository, create a new file and name it "README.md". The ".md" extension stands for Markdown, which is the language you'll use to format your README file.
+3. **Write Your README**: Now, you can start writing your README. Here are some elements you might want to include:
+   - **Introduction**: Briefly introduce yourself and explain what you do.
+   - **Skills**: List your skills and areas of expertise.
+   - **Projects**: Highlight some of your best projects. You can include links to the project repositories and any live demos if available.
+   - **Contact Information**: Provide ways for people to contact you. This could be your email, LinkedIn profile, or other social media links.
+4. **Add Visuals**: To make your README more visually appealing, consider adding some visuals. This could be in the form of images, GIFs, or even emojis. You can also use badges to showcase your skills or the languages you use.
+5. **Use Markdown**: Markdown is a lightweight markup language that you can use to format your README. You can use it to create headers, lists, links, and more. If you're not familiar with Markdown, there are many guides available online.
+6. **Commit and Push**: Once you're happy with your README, commit and push it to your repository. Your new, beautiful GitHub profile README should now be visible on your GitHub profile.
+As for an improved prompt to help you generate an outstanding GitHub profile README, consider this:
+
+"Craft a captivating GitHub profile README that effectively showcases your skills, highlights your best projects, and provides clear contact information. Don't forget to incorporate visually appealing elements such as images, GIFs, badges, and a well-structured layout using Markdown."
 `;
 
 const Home: NextPage = () => {
@@ -220,24 +249,27 @@ const Home: NextPage = () => {
                   Your generated Github Profile
                 </h2>
               </div>
-              <div className="space-y-8 flex flex-col max-w-xl mx-auto">
-                <div
-                  className="bg-white rounded-xl p-4 hover:bg-gray-100 transition cursor-copy border"
-                  onClick={() => {
-                    navigator.clipboard.writeText(generatedBios);
-                    toast("Bio copied to clipboard", {
-                      icon: "✂️",
-                    });
-                  }}
-                  key={generatedBios}
-                >
-                  <ReactMarkdown  children={generatedBios} />
-                </div>
-              </div>
+
             </>
           )}
         </div>
       </main>
+      <div className="space-y-8 flex flex-col items-center max-w-xl mx-auto">
+        <div
+          className="bg-white rounded-xl shadow-mdhover:bg-gray-100 transition cursor-copy border"
+          onClick={() => {
+            navigator.clipboard.writeText(generatedBios);
+            toast("Bio copied to clipboard", {
+              icon: "✂️",
+            });
+          }}
+          key={generatedBios}
+        >
+          <div className="markdown-body p-4">
+            <ReactMarkdown children={generatedBios} />
+          </div>
+        </div>
+      </div>
       <Footer />
     </div>
   );
