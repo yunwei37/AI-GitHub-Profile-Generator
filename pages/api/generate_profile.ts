@@ -46,6 +46,9 @@ Please adhere to the following guidelines:
 - ![Github Stats](https://github-readme-stats.vercel.app/api?username=username)
 - ![Top Langs](https://github-readme-stats.vercel.app/api/top-langs/?username=username)
 - [![trophy](https://github-profile-trophy.vercel.app/?username=username)](https://github.com/username)
+- [![GitHub Streak](https://streak-stats.demolab.com/?user=DenverCoder1)](https://git.io/streak-stats)
+
+And some of the badges from https://img.shields.io/badge 
 
 **Additional Requirements:** In case of extra needs or specifications, they will be provided in this format:
 - {{requirements}}
