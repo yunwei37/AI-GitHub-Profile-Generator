@@ -38,7 +38,7 @@ export default function Footer() {
           </svg>
         </Link>
         <Link
-          href="https://github.com/yunwei37/twitterbio"
+          href="https://github.com/yunwei37/AI-GitHub-Profile-Generator"
           className="group"
           aria-label="TaxPal on GitHub"
         >
