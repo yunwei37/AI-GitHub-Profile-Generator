@@ -12,7 +12,6 @@ import {
   ReconnectInterval,
 } from "eventsource-parser";
 import MDview from '@/components/mdView';
-import ExampleBioComponent from '@/components/example';
 
 const exampleBios = [`
 # About Me
@@ -59,74 +58,6 @@ Thank you for taking the time to visit my GitHub profile and read this README. F
 `];
 
 
-const promptTemplateAnalyzeUser = `
-Given the information about a GitHub user represented by the variables:
-
-- User statistics: {{userStats}}
-- User profile: {{userProfile}}
-
-Your task is to provide a detailed analysis of the user's activity and performance on GitHub. Your evaluation should include, but not be limited to, the following:
-
-1. Make a conclusion about the user's overall activity, skill set and interests. Try to infer as much as possible from the data available.
-2. Insight into the user's coding habits, including their most frequently used languages and the frequency of their commits.
-3. An overview of their project contributions, both in terms of repositories they've created and those they've contributed to.
-4. A snapshot of their overall GitHub presence, encapsulating factors like the number of followers they have and any other significant details available from their profile and stats.
-
-For example, your analysis could highlight a user's strong focus on Python development, 
-their consistent daily commits demonstrating high engagement, 
-or their significant contributions to a high-profile open-source project.
-
-Please structure your analysis in a clear, comprehensible manner with sections,
-highlighting key insights and patterns in the user's GitHub behavior.
-The generated Analysis should be about 300 words long, 
-contains some links to the user's GitHub profile and repositories,
-and provides a well-rounded understanding of the user's activity on GitHub.
-`;
-
-const promptTemplateGenerate = `
-Craft a dynamic and visually compelling GitHub profile README,
-based on user-provided insights and additional requirements.
-
-**User Insights:** You should take into account the following user insights:
-- {{user insights}}
-
-The README should:
-
-- Showcase user skills effectively
-- Highlight the user's best projects without giving detailed project descriptions
-- Include user contact information
-- Provide a deep analysis and comprehensive self-introduction based on the user's GitHub profile
-
-**Style & Design:** The README should be visually appealing. 
-You can choose one from the following styles to showcase the user's skills and conclusions:
-a. Use a code like structure, creatively struct descriptions like a code
-b. add more images, badges, etc. Use less text and more visual elements, structure the README in a more creative way
-c. Use a simple and clean structure, focus on the content and analysis
-
-**Format & Structure:** Use Markdown for the layout with visually appealing elements, such as:
-
-- Images
-- GIFs
-- Badges
-
-Please adhere to the following guidelines:
-
-- Do not use HTML tags, only use Markdown format
-- Do not list specific project details, focus on analysis and summarization
-- Avoid generating more than 2000 words; however, the generated README should be at least 500 words long
-
-**GitHub Stats:** Consider integrating some of the following GitHub stats. Please replace 'username' with the actual GitHub username:
-
-- ![Github Stats](https://github-readme-stats.vercel.app/api?username=username)
-- ![Top Langs](https://github-readme-stats.vercel.app/api/top-langs/?username=username)
-- [![trophy](https://github-profile-trophy.vercel.app/?username=username)](https://github.com/username)
-
-**Additional Requirements:** In case of extra needs or specifications, they will be provided in this format:
-- {{requirements}}
-
-**Output:** Please generate the final README in Markdown format.
-`;
-
 const Home: NextPage = () => {
   const [loading, setLoading] = useState(false);
   const [bio, setBio] = useState("");
@@ -145,6 +76,10 @@ const Home: NextPage = () => {
   // get github user info from api/github/[username]
   async function getUserStats(username: string): Promise<string> {
     const response = await fetch(`/api/github/${username}`);
+    if (!response.ok) {
+      window.alert("Error: " + response.statusText);
+      throw new Error(response.statusText);
+    }
     const data = await response.json();
     return JSON.stringify(data);
   }
@@ -152,26 +87,63 @@ const Home: NextPage = () => {
   async function getUserPage(username: string): Promise<string> {
     const url = `/api/scrape_url?username=${username}`;
     const response = await fetch(url);
+    if (!response.ok) {
+      window.alert("Error: " + response.statusText);
+      throw new Error(response.statusText);
+    }
     const data = await response.json();
     return JSON.stringify(data);
   }
 
-  const generateAIresponse = async (e: any, prompt: string, setGenerated: (value: React.SetStateAction<string>) => void) => {
+  interface UserAnalysisParam {
+    userStats: string;  
+    userProfile: string;
+  }
+
+  interface ProfileGeneratorParam {
+    userAnalysis: string; 
+    requirements: string;
+  }
+
+  const generateAIresponse = async (e: any,
+    profileGeneratorParam: ProfileGeneratorParam | null,
+    userAnalysisParam: UserAnalysisParam | null,
+    setGenerated: (value: React.SetStateAction<string>) => void) => {
     setGenerated((prev) => "");
     e.preventDefault();
-    console.log(prompt);
-    const response = await fetch("/api/generate", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        prompt,
-      }),
-    });
+    let response;
+    if (profileGeneratorParam) { 
+      console.log("profileGeneratorParam");
+      response = await fetch("/api/generate_profile", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          insight: profileGeneratorParam.userAnalysis,
+          requirements: profileGeneratorParam.requirements,
+        }),
+      });  
+    } else if (userAnalysisParam) {
+      console.log("userAnalysisParam");
+      response = await fetch("/api/generate_user", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userStats: userAnalysisParam.userStats,
+          userProfile: userAnalysisParam.userProfile,
+        }),
+      });  
+    } else {
+      console.log("no param");
+      return;
+    }
 
     if (!response.ok) {
-      throw new Error(response.statusText);
+      window.alert("Error: " + response.statusText);
+      return;
     }
 
     // This data is a ReadableStream
@@ -205,6 +177,7 @@ const Home: NextPage = () => {
     }
     scrollToBios();
   }
+
   const handleGenerateUserAnalysis = async (e: any) => {
     if (!userName) {
       window.alert("Please enter a valid GitHub username");
@@ -212,21 +185,24 @@ const Home: NextPage = () => {
     }
     setLoading(true);
     e.preventDefault();
-    // get user state and analysis user first
-    setGeneratedBios(`Getting user stats for ${userName}...`);
-    const userStats: string = await getUserStats(userName);
-    console.log(userStats);
+    try {
+          // get user state and analysis user first
+      setGeneratedBios(`Getting user stats for ${userName}...`);
+      const userStats: string = await getUserStats(userName);
+      console.log(userStats);
 
-    setGeneratedBios(`Getting user profile for ${userName}...`);
-    const userPage: string = await getUserPage(userName);
-    console.log(userPage);
-    setGeneratedBios("");
-
-    const promptUserAnalysis = promptTemplateAnalyzeUser.
-      replace("{{userStats}}", userStats).
-      replace("{{userProfile}}", userPage);
-    generateAIresponse(e, promptUserAnalysis, setGeneratedUserAnalysis);
-
+      setGeneratedBios(`Getting user profile for ${userName}...`);
+      const userPage: string = await getUserPage(userName);
+      console.log(userPage);
+      setGeneratedBios("");
+      const userAnalysisParam: UserAnalysisParam = {
+        userStats: userStats,
+        userProfile: userPage,
+      };
+      generateAIresponse(e, null, userAnalysisParam, setGeneratedUserAnalysis);  
+    } catch (e) {
+      console.error(e);
+    }
     setLoading(false);
   };
 
@@ -238,10 +214,11 @@ const Home: NextPage = () => {
     setLoading(true);
     e.preventDefault();
 
-    const promptProfile = promptTemplateGenerate.
-      replace("{{user insights}}", generatedUserAnalysis).
-      replace("{{requirements}}", bio);
-    generateAIresponse(e, promptProfile, setGeneratedBios);
+    const profileGeneratorParam: ProfileGeneratorParam = {
+      userAnalysis: generatedUserAnalysis,
+      requirements: bio,
+    };
+    generateAIresponse(e, profileGeneratorParam, null, setGeneratedBios);
     setLoading(false);
   };
 
@@ -319,16 +296,16 @@ const Home: NextPage = () => {
             title='Your GitHub Profile README'
           />
           <div className="flex flex-row">
-                <p
-                    onClick={() => setGeneratedBios((prev) => prev ? "" : exampleBios[0])}
-                >
-                    Click to show generated example
-                </p>
+            <p
+              onClick={() => setGeneratedBios((prev) => prev ? "" : exampleBios[0])}
+            >
+              Click to show generated example
+            </p>
           </div>
 
-          <Footer />
         </div>
         <hr className="h-px bg-gray-700 border-1 dark:bg-gray-700" />
+        <Footer />
       </div>
 
     </div>
