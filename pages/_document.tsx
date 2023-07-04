@@ -11,25 +11,17 @@ class MyDocument extends Document {
             name="description"
             content="Generate your beautiful GitHub Profile README in seconds with GPT and AI."
           />
-          <meta property="og:site_name" content="twitterbio.io" />
+          <meta property="og:site_name" content="github-profile-gpt.vercel.app" />
           <meta
             property="og:description"
             content="Generate your beautiful GitHub Profile README in seconds with GPT and AI."
           />
-          <meta property="og:title" content="Twitter Bio Generator" />
+          <meta property="og:title" content="Github Profile AI Generator" />
           <meta name="twitter:card" content="summary_large_image" />
           <meta name="twitter:title" content="GPT and AI Github Profile README Generator" />
           <meta
             name="twitter:description"
             content="Generate your beautiful GitHub Profile README in seconds."
-          />
-          <meta
-            property="og:image"
-            content="https://twitterbio.io/og-image.png"
-          />
-          <meta
-            name="twitter:image"
-            content="https://twitterbio.io/og-image.png"
           />
         </Head>
         <body>
