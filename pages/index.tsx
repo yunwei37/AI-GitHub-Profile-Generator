@@ -57,13 +57,16 @@ Let's collaborate, share ideas, and make meaningful contributions to the world o
 Thank you for taking the time to visit my GitHub profile and read this README. Feel free to explore my projects, and don't hesitate to reach out if you have any questions or opportunities for collaboration. Together, we can make a positive impact in the world of software development!
 `];
 
-
 const Home: NextPage = () => {
   const [loading, setLoading] = useState(false);
   const [bio, setBio] = useState("");
   const [generatedUserAnalysis, setGeneratedUserAnalysis] = useState<string>("");
   const [generatedBios, setGeneratedBios] = useState<string>("");
   const [userName, setUserName] = useState<string>("");
+
+  const [githubProfileData, setGithubProfileData] = useState<string>("");
+  const [githubStatsData, setGithubStatsData] = useState<string>("");
+  const [githubRawData, setGithubRawData] = useState<string>("");
 
   const bioRef = useRef<null | HTMLDivElement>(null);
 
@@ -96,12 +99,12 @@ const Home: NextPage = () => {
   }
 
   interface UserAnalysisParam {
-    userStats: string;  
+    userStats: string;
     userProfile: string;
   }
 
   interface ProfileGeneratorParam {
-    userAnalysis: string; 
+    userAnalysis: string;
     requirements: string;
   }
 
@@ -112,7 +115,7 @@ const Home: NextPage = () => {
     setGenerated((prev) => "");
     e.preventDefault();
     let response;
-    if (profileGeneratorParam) { 
+    if (profileGeneratorParam) {
       console.log("profileGeneratorParam");
       response = await fetch("/api/generate_profile", {
         method: "POST",
@@ -123,7 +126,7 @@ const Home: NextPage = () => {
           insight: profileGeneratorParam.userAnalysis,
           requirements: profileGeneratorParam.requirements,
         }),
-      });  
+      });
     } else if (userAnalysisParam) {
       console.log("userAnalysisParam");
       response = await fetch("/api/generate_user", {
@@ -135,7 +138,7 @@ const Home: NextPage = () => {
           userStats: userAnalysisParam.userStats,
           userProfile: userAnalysisParam.userProfile,
         }),
-      });  
+      });
     } else {
       console.log("no param");
       return;
@@ -186,20 +189,23 @@ const Home: NextPage = () => {
     setLoading(true);
     e.preventDefault();
     try {
-          // get user state and analysis user first
+      // get user state and analysis user first
       setGeneratedBios(`Getting user stats for ${userName}...`);
       const userStats: string = await getUserStats(userName);
       console.log(userStats);
+      setGithubStatsData(userStats);
 
       setGeneratedBios(`Getting user profile for ${userName}...`);
       const userPage: string = await getUserPage(userName);
       console.log(userPage);
+      setGithubProfileData(userPage);
+    
       setGeneratedBios("");
       const userAnalysisParam: UserAnalysisParam = {
         userStats: userStats,
         userProfile: userPage,
       };
-      generateAIresponse(e, null, userAnalysisParam, setGeneratedUserAnalysis);  
+      generateAIresponse(e, null, userAnalysisParam, setGeneratedUserAnalysis);
     } catch (e) {
       console.error(e);
     }
@@ -295,14 +301,26 @@ const Home: NextPage = () => {
             buttonText='Generate GitHub Profile README'
             title='Your GitHub Profile README'
           />
-          <div className="flex flex-row">
+          <div className="flex flex-row py-2">
             <p
               onClick={() => setGeneratedBios((prev) => prev ? "" : exampleBios[0])}
             >
               Click to show generated example
             </p>
           </div>
-
+          <div className="mt-10">
+            <h2 className="text-2xl font-bold text-slate-900 mb-4">How the AI Works: 
+            </h2>
+            <p>(click to see the intermediate steps data)</p>
+            <ol className="list-decimal list-inside space-y-2">
+              <li className="text-slate-500" onClick={() => setGithubRawData(githubStatsData)}>Retrieves the user's repository information to understand their project contributions.</li>
+              <li className="text-slate-500" onClick={() => setGithubRawData(githubProfileData)}>Fetches the user's profile data to gain insights into their professional background and skills.</li>
+              <li className="text-slate-500" onClick={() => setGithubRawData(githubStatsData)}>Analyzes the user's contributions to identify patterns, frequency, and areas of expertise.</li>
+              <li className="text-slate-500">Summarizes the user's activities, contributions, and skills into a comprehensive overview.</li>
+              <li className="text-slate-500">Generates a new, enriched GitHub profile README that highlights the user's contributions and skills.</li>
+            </ol>
+            <p>{githubRawData}</p>
+          </div>
         </div>
         <hr className="h-px bg-gray-700 border-1 dark:bg-gray-700" />
         <Footer />
