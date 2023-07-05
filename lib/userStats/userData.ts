@@ -25,6 +25,7 @@ interface UserStatsFull {
     totalStars: number;
     contributedTo: number;
     mostStarredRepos: any;
+    GitHubContributions: any;
     error: string;
 }
 
@@ -45,7 +46,7 @@ export default async function generateUserStats(owner: string): Promise<UserStat
         ...data,
     };
     try {
-          // use the repoCache here
+        // use the repoCache here
         let stats: userStats;
         let cacheRes = userCache.get(owner);
         if (cacheRes) {
@@ -71,7 +72,7 @@ export default async function generateUserStats(owner: string): Promise<UserStat
     // Keys to be kept
     const keysToKeep: (keyof UserStatsFull)[] = ["html_url", "type", "name", "company", "blog", "location", "email", "hireable", "bio",
         "twitter_username", "public_repos", "public_gists", "followers", "following", "created_at",
-        "updated_at", "totalPRs", "totalCommits", "totalIssues", "totalStars", "contributedTo",  "mostStarredRepos", "error"];
+        "updated_at", "totalPRs", "totalCommits", "totalIssues", "totalStars", "contributedTo", "mostStarredRepos", "GitHubContributions", "error"];
 
     // Filter the full data to only include keys from the whitelist
     const filteredData: UserStatsFull = Object.keys(fullData)
