@@ -176,7 +176,7 @@ const fetchStats = async (username: string): Promise<userStats> => {
         repositoryTopics: repo.repositoryTopics.edges.map((edge) => edge.node.topic.name),
       };
     })
-    .slice(0, 20);
+    .slice(0, 10);
 
 
   stats.mostStarredRepos = mostStarredRepos;
